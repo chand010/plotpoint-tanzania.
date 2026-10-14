@@ -8,29 +8,45 @@ PlotPoint Tanzania is a map-first real-estate discovery project, starting with p
 
 The prototype is deployed at https://plotpoint-tanzania.vercel.app. It is a demo, not yet a production marketplace. Demo listings and map pins are illustrative; they do not establish property ownership, title, or surveyed boundaries.
 
-## Planned stack
+The current prototype is a standalone HTML page. The production Laravel application, database, authentication, S3 storage, and seller verification workflow are planned and not yet implemented or tested.
 
-- Next.js and Tailwind CSS
-- Supabase for authentication and database
-- Leaflet and OpenStreetMap for maps
-- Vercel for deployment
-- GitHub for source control
+## Chosen architecture
 
-These are plans, not features that should be considered implemented until configured and tested.
+- **Laravel + Blade + Tailwind CSS** for server-rendered pages and application logic.
+- **PostgreSQL** for users, listings, locations, enquiries, verification records, and metadata.
+- **Amazon S3** for property images, uploaded documents, and other file resources. Use private object storage by default, short-lived presigned URLs, server-side upload authorization, file size/type validation, and lifecycle rules.
+- **Leaflet + OpenStreetMap** for interactive maps.
+- **GitHub** for source control.
+- **Laravel-compatible hosting** for the application and a managed PostgreSQL database for production.
+
+This replaces the earlier Next.js/Supabase proposal. Do not treat any planned component as implemented until configured and tested. Keep the current Vercel prototype online during the migration; do not create a duplicate project or claim that Laravel has been deployed until a real deployment is verified.
 
 ## Roadmap
 
-1. Version the working prototype source.
-2. Build property search and listing pages.
-3. Design database tables for listings, sellers, verification, and enquiries.
-4. Add authentication and role-based access.
-5. Add seller onboarding, property review, and listing moderation.
-6. Test security, privacy, accessibility, and mobile usability.
+1. Preserve and document the existing UI prototype.
+2. Scaffold the Laravel application with environment-based configuration.
+3. Configure PostgreSQL and migrations for users, properties, locations, images, documents, enquiries, and verification records.
+4. Implement authentication, roles, policies, and seller onboarding.
+5. Integrate S3 for uploads using private buckets and short-lived presigned URLs.
+6. Build property search, listing pages, and the map-first browsing experience.
+7. Add moderation, seller/property review workflows, and audit logs.
+8. Test security, privacy, accessibility, mobile usability, backup/restore, and production deployment.
+
+## Storage and security rules
+
+- Never commit .env, cloud credentials, access keys, passwords, or signed URLs.
+- Do not expose S3 access keys in browser code. The server authorizes uploads and issues narrowly scoped, short-lived presigned URLs where appropriate.
+- Keep verification documents private. Grant access only to authorized users and reviewers.
+- Validate file size, allowed file types, file signatures where practical, and ownership/authorization server-side. Generate safe object keys instead of trusting uploaded filenames.
+- Do not allow arbitrary public writes or rely on client-provided MIME types alone.
+- Consider malware scanning for uploaded documents and images before publication.
+- Set upload size limits, retention/lifecycle rules, logging, and budget alerts. S3 storage and data transfer may cost money; it is not automatically free.
+- Seller verification is separate from property/document verification.
 
 ## Listing safeguards
 
-Before publishing a real property, review the location, plot or survey-plan references where applicable, plot ID, size, price, availability, seller authority, written permission to advertise, and any referral or commission terms. Seller identity verification is separate from property/document verification.
+Before publishing a real property, review the location, plot or survey-plan references where applicable, plot ID, size, price, availability, seller authority, written permission to advertise, and any referral or commission terms. A map pin does not prove title or surveyed boundaries.
 
-## Security
+## Architecture notes
 
-Do not commit secrets, passwords, or API keys. Configure credentials through environment variables and the hosting platform's secret settings.
+See [docs/architecture.md](docs/architecture.md) for the initial design decisions and upload flow.
