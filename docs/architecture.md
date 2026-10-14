@@ -6,7 +6,7 @@
 
 - **Application:** Laravel with Blade templates and Tailwind CSS.
 - **Database:** PostgreSQL.
-- **Object storage:** Amazon S3 for property images, seller/property documents, and other uploaded resources.
+- **Object storage:** Cloudflare R2 for property images, seller/property documents, and other uploaded resources. Use its S3-compatible API with Laravel's filesystem adapter.
 - **Maps:** Leaflet + OpenStreetMap.
 - **Source control:** GitHub.
 - **Hosting:** A Laravel-compatible application host plus managed PostgreSQL. Keep the current Vercel static prototype separate until the Laravel deployment is verified.
@@ -38,34 +38,34 @@
 
 Use foreign keys, constraints, appropriate indexes, and database transactions for related changes. Consider PostGIS only if distance/radius or advanced geospatial queries become a real requirement.
 
-## S3 upload flow
+## Cloudflare R2 upload flow
 
 1. An authenticated user asks the Laravel backend to upload a file and identifies the intended property/resource.
 2. Laravel checks the user's role, ownership, listing state, allowed file type, and maximum permitted size.
 3. Laravel creates a random, non-user-controlled object key and returns a short-lived presigned upload URL for that specific object, or accepts the file through the backend where that is more appropriate.
-4. The client uploads to S3 without ever receiving AWS access keys.
+4. The client uploads to R2 without ever receiving R2 access keys.
 5. Laravel verifies the resulting object metadata and records it in PostgreSQL. Where configured, the object remains quarantined until malware/content checks finish.
-6. Only approved public listing media may be delivered publicly through a controlled public-media path or CDN. Verification documents remain private and are delivered only after server-side authorization, using short-lived download URLs when needed.
+6. Only approved public listing media may be delivered through a controlled public-media path or CDN. Verification documents remain private and are delivered only after server-side authorization, using short-lived download URLs when needed.
 
-## S3 security baseline
+## R2 security baseline
 
-- Block public access at bucket level by default.
-- Keep identity/verification documents in a private bucket; ideally separate them from public listing media by bucket or strict prefixes and policies.
-- Use least-privilege IAM permissions limited to the required buckets/prefixes and operations.
-- Prefer temporary credentials/role-based access where the hosting provider supports it; otherwise keep access keys in the hosting secret manager, never in Git.
+- Keep buckets private by default; enable public access only for intentionally public listing media if the delivery model requires it.
+- Keep identity/verification documents private; ideally separate them from public listing media by bucket or strict prefixes and policies.
+- Use scoped R2 API tokens with least-privilege access to the required bucket and operations.
+- Keep R2 credentials in the hosting secret manager or ignored local .env file, never in Git or browser code.
 - Use server-generated object keys; do not trust uploaded filenames or client-supplied content types.
 - Enforce file size limits and allowlists; validate file signatures where practical.
-- Configure encryption at rest, HTTPS-only access, logging, retention/lifecycle rules, and cost/budget alerts.
+- Use HTTPS, review logging and retention needs, configure lifecycle rules where appropriate, and set usage/budget alerts.
 - Avoid logging file contents, credentials, private document URLs, or sensitive personal data.
 - Consider malware scanning and image re-encoding before public publication.
 - Do not treat a successful upload or seller approval as proof of property ownership.
 
 ## Configuration
 
-Expected environment configuration will be documented when the Laravel app is scaffolded. Names will likely include AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, AWS_BUCKET, and optionally AWS_ENDPOINT for an S3-compatible provider. Actual secrets must only be stored in local ignored .env files or the hosting secret manager. Never place values in this document or source control.
+When scaffolding Laravel, configure the S3-compatible filesystem disk with the R2 account endpoint, bucket name, region value required by the adapter, and R2 access credentials. Exact environment variable names will be recorded in the implementation setup guide. Never place real secrets in this document or source control.
 
 ## Cost and deployment notes
 
-S3 storage, requests, retrieval, and data transfer can incur charges. Use upload caps, image resizing, lifecycle policies, and budget alerts. Before launch, select the hosting region and storage region deliberately and test backup/restore and access controls.
+R2 has a free usage allowance, but storage, request volumes, and other service usage can exceed included limits. Confirm current pricing and terms before production, set upload caps and usage alerts, and optimize images. Before launch, choose the application/database hosting arrangement and test backup/restore and access controls.
 
 The existing static Vercel prototype is not the Laravel application. Do not claim the new stack is live until the backend, database, storage policies, and deployment have actually been configured and tested.
