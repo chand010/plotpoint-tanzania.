@@ -16,9 +16,11 @@ This branch transitions the standalone HTML concept toward Laravel. The existing
 - Public property search and detail pages with validated keyword, region, district, type, and price filters.
 - Public listing visibility gates: published status, verified seller, reviewed property, and recorded advertising permission.
 - Session-based registration, login, logout, login throttling, and session regeneration.
-- Authenticated seller workspace and property submission form.
-- Submitted properties are saved as private drafts; sellers cannot set verification flags or publish a listing from the public form.
-- Basic feature tests for public visibility gates and seller draft submission.
+- Authenticated seller workspace and property submission form. Submissions are private drafts.
+- Admin-role middleware and restricted review queue/detail pages.
+- Separate seller verification and property review actions, requiring a reference and written notes.
+- Review audit table with admin, action, notes, reference, timestamp, and status metadata.
+- Feature tests for public visibility, private draft submission, and admin access/verification behavior.
 - GitHub Actions workflow for Composer install, frontend build, and Laravel tests.
 
 ## Local setup
@@ -32,7 +34,11 @@ This branch transitions the standalone HTML concept toward Laravel. The existing
 7. Run `npm install && npm run build`.
 8. Run `php artisan test`, then `php artisan serve`.
 
-**Validation status:** the GitHub branch has not yet been executed in a local PHP/Node environment. The CI workflow is configured but has not been confirmed passing. Do not merge or deploy until dependency installation, migrations, asset compilation, and tests succeed.
+**Validation status:** GitHub Actions is currently running for this branch; passing tests/build have not yet been confirmed. Do not merge or deploy until dependency installation, migrations, asset compilation, and tests succeed.
+
+## Admin account provisioning
+
+Public registration always creates a `buyer` account; it does not accept a role from the request. The admin pages require the server-side `role` value to equal `admin`. Do not add a public admin-registration route. After deployment, promote a trusted account through a controlled database/admin operation, with strong credentials and MFA where the chosen authentication stack supports it. Never expose admin credentials or grant roles based on user-submitted fields.
 
 ## Cloudflare R2 setup
 
@@ -48,15 +54,17 @@ The R2 disk uses Laravel's S3-compatible Flysystem adapter. No real upload endpo
 
 - `properties`: seller, location, plot details, price, status, and separate seller/property review flags.
 - `property_media`: object key and file metadata; file bytes should live in R2.
-- A public seller submission creates a private draft only. There is no admin review dashboard or seller identity verification workflow yet.
-- The authority-to-advertise checkbox is a seller attestation, not independent proof of authority.
+- `property_review_audits`: append-style record of administrative review actions.
+- A seller's authority-to-advertise checkbox is a self-attestation, not independent proof of ownership or legal authority.
+- Review reference fields record an internal evidence reference only. The app does not yet upload, store, or verify source documents.
 - A map marker is not proof of title, ownership, survey boundaries, or legal advertising authority. Verify documents independently before payment.
+- Public property visibility still requires every gate to pass. Approving property review alone does not bypass seller verification.
 - Never publish fictional demo content as real inventory.
 
 ## Still to implement
 
-- Admin-only review dashboard, audit trail, and a safe way to record separate seller and property verification.
 - Secure R2 upload service: file allowlist, strict byte limits, randomized object keys, image re-encoding, malware scanning where available, and authorized private document delivery.
 - Public photo rendering separated from private legal documents.
+- Review retraction/revocation flow and richer admin audit/permission controls.
 - Seller editing/deletion workflow, enquiries, email verification and password reset.
-- Full PostgreSQL integration tests, CI verification, deployment, backups, and production monitoring.
+- Full PostgreSQL integration tests, confirmed CI, deployment, backups, and production monitoring.
