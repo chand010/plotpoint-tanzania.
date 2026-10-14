@@ -13,24 +13,10 @@ class Property extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'seller_id',
-        'title',
-        'slug',
-        'description',
-        'property_type',
-        'region',
-        'district',
-        'ward',
-        'neighbourhood',
-        'latitude',
-        'longitude',
-        'area_square_meters',
-        'currency',
-        'price_tzs',
-        'status',
-        'seller_verified',
-        'property_reviewed',
-        'advertising_permission_at',
+        'seller_id', 'title', 'slug', 'description', 'property_type',
+        'region', 'district', 'ward', 'neighbourhood', 'latitude',
+        'longitude', 'area_square_meters', 'currency', 'price_tzs',
+        'status', 'seller_verified', 'property_reviewed', 'advertising_permission_at',
     ];
 
     protected function casts(): array
@@ -42,6 +28,8 @@ class Property extends Model
             'price_tzs' => 'integer',
             'seller_verified' => 'boolean',
             'property_reviewed' => 'boolean',
+            'seller_verified_at' => 'datetime',
+            'property_reviewed_at' => 'datetime',
             'advertising_permission_at' => 'datetime',
         ];
     }
@@ -59,5 +47,10 @@ class Property extends Model
     public function media(): HasMany
     {
         return $this->hasMany(PropertyMedia::class);
+    }
+
+    public function reviewAudits(): HasMany
+    {
+        return $this->hasMany(PropertyReviewAudit::class);
     }
 }
