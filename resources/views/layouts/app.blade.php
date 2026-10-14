@@ -26,15 +26,24 @@
         .pagination{margin:20px 0;display:flex;flex-wrap:wrap;gap:8px}.pagination a,.pagination span{padding:7px 11px;border:1px solid var(--line);border-radius:8px;text-decoration:none}
         footer{border-top:1px solid var(--line);margin-top:42px;padding:24px 0 36px;color:#8297b2;font-size:.85rem}.detail-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;margin-top:26px}.detail-panel{border:1px solid var(--line);background:var(--panel);padding:20px;border-radius:16px}
         .facts{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fact{padding:12px;background:#091a2d;border:1px solid #203a57;border-radius:10px}.fact small{display:block;color:var(--muted)}
+        .nav-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.nav-actions a,.nav-actions button{font-size:.85rem;padding:8px 11px}
         @media(max-width:980px){.search{grid-template-columns:repeat(3,minmax(0,1fr))}.market-grid{grid-template-columns:1fr}#property-map{height:380px}}
-        @media(max-width:600px){.container{width:calc(100% - 22px)}.nav-note{display:none}.search{grid-template-columns:1fr 1fr}.search .wide{grid-column:1/-1}.cards{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
+        @media(max-width:600px){.container{width:calc(100% - 22px)}.nav-note{display:none}.search{grid-template-columns:1fr 1fr}.search .wide{grid-column:1/-1}.cards{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
 <header class="topbar"><div class="container nav">
     <a class="brand" href="{{ route('home') }}">PlotPoint <span>Tanzania</span></a>
     <span class="nav-note">Find Your Plot. Know Its Location. Make Your Move.</span>
-    <span class="pill">Early access build</span>
+    <nav class="nav-actions" aria-label="Account">
+        @auth
+            <a class="btn btn-outline" href="{{ route('seller.properties.index') }}">My listings</a>
+            <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-outline" type="submit">Sign out</button></form>
+        @else
+            <a class="btn btn-outline" href="{{ route('login') }}">Sign in</a>
+            <a class="btn" href="{{ route('register') }}">Create account</a>
+        @endauth
+    </nav>
 </div></header>
 <main class="container">@yield('content')</main>
 <footer><div class="container"><strong>PlotPoint Tanzania</strong> · Location-first land discovery.
