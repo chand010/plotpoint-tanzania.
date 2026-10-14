@@ -80,6 +80,7 @@ class AdminPropertyReviewController extends Controller
 
         DB::transaction(function () use ($request, $property, $data): void {
             $property = Property::query()->lockForUpdate()->findOrFail($property->id);
+            $previousStatus = $property->status;
             $approved = $data['decision'] === 'approve';
 
             $property->forceFill([
@@ -96,7 +97,7 @@ class AdminPropertyReviewController extends Controller
                 'action' => $approved ? 'property_approved' : 'property_rejected',
                 'notes' => $data['notes'],
                 'evidence_reference' => $data['evidence_reference'],
-                'metadata' => ['previous_status' => $property->getOriginal('status')],
+                'metadata' => ['previous_status' => $previousStatus, 'new_status' => $property->status],
             ]);
         });
 
